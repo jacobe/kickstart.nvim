@@ -673,7 +673,17 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
+        pyright = {
+          settings = {
+            python = {
+              analysis = {
+                autoSearchPaths = true,
+                useLibraryCodeForTypes = true,
+                typeCheckingMode = 'basic',
+              },
+            },
+          },
+        },
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -716,6 +726,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'ruff', -- Python formatter and linter (fast, modern)
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -940,28 +951,67 @@ require('lazy').setup({
   },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
+    lazy = false, -- nvim-treesitter does not support lazy-loading
+    branch = 'main', -- Use main branch (master is frozen)
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
-    opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
-      -- Autoinstall languages that are not installed
-      auto_install = true,
-      highlight = {
-        enable = true,
-        -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
-        --  If you are experiencing weird indenting issues, add the language to
-        --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-        additional_vim_regex_highlighting = { 'ruby' },
-      },
-      indent = { enable = true, disable = { 'ruby' } },
-    },
+    -- NOTE: The main branch is a complete rewrite that uses Neovim's built-in treesitter features
+    -- instead of the old nvim-treesitter.configs module.
+    config = function()
+      -- Setup nvim-treesitter (optional, uses defaults if omitted)
+      require('nvim-treesitter').setup {
+        install_dir = vim.fn.stdpath 'data' .. '/site',
+        ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python' },
+        auto_install = true,
+      }
+
+      -- Enable treesitter-based highlighting for all filetypes
+      vim.api.nvim_create_autocmd({ 'FileType', 'BufEnter', 'BufWinEnter' }, {
+        group = vim.api.nvim_create_augroup('treesitter-enable', { clear = true }),
+        callback = function(args)
+          -- Skip special buffers
+          local buftype = vim.bo[args.buf].buftype
+          if buftype ~= '' then
+            return
+          end
+
+          -- Enable highlighting using Neovim's built-in treesitter
+          -- Use pcall to avoid errors for filetypes without parsers (e.g., neo-tree)
+          local success, err = pcall(vim.treesitter.start, args.buf)
+          if not success then
+            -- Silently ignore errors for buffers without parsers
+          end
+        end,
+      })
+
+      -- Enable treesitter-based indentation (experimental)
+      -- Note: Ruby indentation can be problematic with treesitter
+      vim.api.nvim_create_autocmd('FileType', {
+        group = vim.api.nvim_create_augroup('treesitter-indent', { clear = true }),
+        pattern = { '*' },
+        callback = function()
+          if vim.bo.filetype ~= 'ruby' then
+            vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          end
+        end,
+      })
+
+      -- Enable treesitter-based folding
+      -- vim.api.nvim_create_autocmd('FileType', {
+      --   group = vim.api.nvim_create_augroup('treesitter-fold', { clear = true }),
+      --   callback = function()
+      --     vim.wo.foldmethod = 'expr'
+      --     vim.wo.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+      --   end,
+      -- })
+    end,
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
     --
-    --    - Incremental selection: Included, see `:help nvim-treesitter-incremental-selection-mod`
+    --    - REMOVED in main branch: Incremental selection (no longer available)
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
+    --      (Note: May not be compatible with main branch)
   },
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
@@ -973,18 +1023,18 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.debug',
   -- require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
