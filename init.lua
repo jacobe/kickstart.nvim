@@ -964,7 +964,7 @@ require('lazy').setup({
       -- Setup nvim-treesitter (optional, uses defaults if omitted)
       require('nvim-treesitter').setup {
         install_dir = vim.fn.stdpath 'data' .. '/site',
-        ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python' },
+        ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'python', 'php' },
         auto_install = true,
       }
 
