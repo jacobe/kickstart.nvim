@@ -172,6 +172,10 @@ vim.o.confirm = true
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
+-- Scroll viewport 3 lines at a time instead of 1
+vim.keymap.set('n', '<C-e>', '3<C-e>', { desc = 'Scroll down 3 lines' })
+vim.keymap.set('n', '<C-y>', '3<C-y>', { desc = 'Scroll up 3 lines' })
+
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
