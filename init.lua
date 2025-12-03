@@ -291,6 +291,7 @@ require('lazy').setup({
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
+      current_line_blame = true, -- Enable current line blame by default
     },
   },
 
