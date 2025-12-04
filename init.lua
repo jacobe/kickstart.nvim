@@ -183,6 +183,9 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 -- Remove character under cursor and enter insert mode
 vim.keymap.set('n', 's', '"_xi', { desc = 'Remove character under cursor and enter insert mode' })
 
+-- Jump to last edit location
+vim.keymap.set('n', '<C-->', 'g;', { desc = 'Jump to last edit location' })
+
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
