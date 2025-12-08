@@ -186,6 +186,36 @@ vim.keymap.set('n', 's', '"_xi', { desc = 'Remove character under cursor and ent
 -- Jump to last edit location
 vim.keymap.set('n', '<C-->', 'g;', { desc = 'Jump to last edit location' })
 
+-- Upload current file to remote server via scp
+vim.keymap.set('n', '<D-S-u>', function()
+  local ssh_remote = vim.env.SSH_REMOTE
+  if not ssh_remote or ssh_remote == '' then
+    vim.notify('SSH_REMOTE environment variable is not set', vim.log.levels.ERROR)
+    return
+  end
+
+  local file_path = vim.fn.expand '%:.'
+  if file_path == '' then
+    vim.notify('No file in current buffer', vim.log.levels.ERROR)
+    return
+  end
+
+  local remote_path = ssh_remote .. '/' .. file_path
+  local cmd = string.format('scp %s %s', vim.fn.shellescape(file_path), vim.fn.shellescape(remote_path))
+
+  vim.notify('Uploading: ' .. file_path .. ' -> ' .. remote_path, vim.log.levels.INFO)
+
+  vim.fn.jobstart(cmd, {
+    on_exit = function(_, exit_code)
+      if exit_code == 0 then
+        vim.notify('Upload successful: ' .. file_path, vim.log.levels.INFO)
+      else
+        vim.notify('Upload failed: ' .. file_path .. ' (exit code: ' .. exit_code .. ')', vim.log.levels.ERROR)
+      end
+    end,
+  })
+end, { desc = 'Upload file to SSH_REMOTE via scp' })
+
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
 
