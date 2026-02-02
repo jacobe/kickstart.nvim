@@ -171,6 +171,10 @@ vim.o.confirm = true
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
+--
+-- Make :W behave like :w (common muscle-memory fix)
+vim.api.nvim_create_user_command('W', 'w', {})
+vim.api.nvim_create_user_command('Wq', 'wq', {})
 
 -- Scroll viewport 3 lines at a time instead of 1
 vim.keymap.set('n', '<C-e>', '3<C-e>', { desc = 'Scroll down 3 lines' })
