@@ -754,8 +754,19 @@ require('lazy').setup({
             },
           },
         },
+        omnisharp = {},
+        terraformls = {},
         intelephense = {},
         laravel_ls = {},
+        yamlls = {
+          format = { enable = true },
+          validate = true,
+          hover = true,
+          completion = true,
+          schemas = {
+            ['https://json.schemastore.org/bitbucket-pipelines.json'] = 'bitbucket-pipelines.yaml',
+          },
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -774,6 +785,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'terraform-ls', -- Terraform language server
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -826,6 +838,8 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        terraform = { 'terraform_fmt' },
+        ['terraform-vars'] = { 'terraform_fmt' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
