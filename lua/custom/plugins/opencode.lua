@@ -40,6 +40,10 @@ return {
       require('opencode').command 'session.half.page.down'
     end, { desc = 'opencode half page down' })
 
+    vim.keymap.set('n', '<leader>.', function()
+      require('opencode').prompt('@buffer', { submit = false })
+    end, { desc = 'Add file to OpenCode' })
+
     -- You may want these if you stick with the opinionated "<C-a>" and "<C-x>" above — otherwise consider "<leader>o".
     vim.keymap.set('n', '+', '<C-a>', { desc = 'Increment', noremap = true })
     vim.keymap.set('n', '-', '<C-x>', { desc = 'Decrement', noremap = true })
